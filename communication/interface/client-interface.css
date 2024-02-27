@@ -101,6 +101,7 @@ button:hover{
 
 .file-selector-zone{
     border-right: solid 1px #e1e1e1;
+    user-select: none;
 }
 
 .file-selector-zone .file-list{
@@ -126,6 +127,9 @@ button:hover{
     border-radius: 5px;
     padding: 10px 20px 10px 20px;
     height: max-content;
+    width: 300px;
+    max-width: 90%;
+    text-align: center;
 }
 
 .file-selector-zone .file-list .file img{
@@ -143,6 +147,7 @@ button:hover{
     padding: 10px;
     border-radius: 5px;
     cursor: pointer;
+    margin-bottom: 20px;
 }
 
 @keyframes move {

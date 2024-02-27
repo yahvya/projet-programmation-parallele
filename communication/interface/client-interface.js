@@ -22,7 +22,7 @@ loadFilesList()
 
             input.id = `files${index}`;
             input.type = "checkbox";
-            input.name = "files";
+            input.name = "files[]";
             input.value = fileDatas.name;
 
             fileContainer.setAttribute("for",`files${index}`);
@@ -42,6 +42,17 @@ fileSelectionForm.addEventListener("submit",(submitEvent) => {
     submitEvent.preventDefault();
 
     const form = new FormData(fileSelectionForm);
+    const options = {
+        method: "POST",
+        body: form
+    };
+
+    fetch("http://127.0.0.1:6060/download-files",options)
+        .then(response => response.json() )
+        .then(files => {
+            console.log(files)
+        })
+        .catch(error => alert("Une erreur s'est produite, veuillez retenter") );
 });
 
 /**
@@ -50,18 +61,18 @@ fileSelectionForm.addEventListener("submit",(submitEvent) => {
  */
 function loadFilesList() {
     return new Promise((resolve, reject) => {
-        const form = new FormData();
-
-        form.append("include-log",includeLogChecker.checked);
-
         const options = {
-            method: "POST",
-            body: form
+            method: "POST"
         };
 
-        fetch("http://127.0.0.1:8000/get-files-list", options)
+        fetch("http://127.0.0.1:6060/get-files-list", options)
             .then(response => response.json())
-            .then(filesList => resolve(filesList))
+            .then(datas => {
+                if(datas.success)
+                    resolve(datas.files)
+                else
+                    reject(datas.error)
+            })
             .catch(error => reject("Une erreur s'est produite lors de la récupération des fichiers"));
     });
 }

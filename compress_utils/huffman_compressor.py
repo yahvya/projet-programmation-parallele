@@ -1,36 +1,35 @@
 import json
 from typing import TextIO
 from collections import Counter
-
-from CompressionException import CompressionException
+from compression_exception import compression_exception
 
 
 ##
 # @brief compresseur de huffman
-class HuffmanCompressor:
+class huffman_compressor:
 
     ##
     # @brief compresse le fichier fourni
     # @param file_path chemin absolu du fichier à compresser
     # @return le contenu compressé du fichier
-    # @throws CompressionException en cas d'erreur
+    # @throws compression_exception en cas d'erreur
     @staticmethod
     def compress_file(file_path: str) -> str:
         try:
             with open(file_path, 'r') as file_to_compress:
-                return HuffmanCompressor.compress_tree(HuffmanCompressor.get_tree_from_file(file_to_compress), file_to_compress)
+                return huffman_compressor.compress_tree(huffman_compressor.get_tree_from_file(file_to_compress), file_to_compress)
 
-        except CompressionException as e:
+        except compression_exception as e:
             raise e
         except Exception as _:
-            raise CompressionException("Une erreur s'est produite")
+            raise compression_exception("Une erreur s'est produite")
 
     ##
     # @brief compresse l'arbre passée
     # @param tree l'arbre de huffman
     # @param file le fichier originaire de l'arbre
     # @return le contenu compressé
-    # @throws CompressionException en cas d'erreur
+    # @throws compression_exception en cas d'erreur
     @staticmethod
     def compress_tree(tree: [str, ], file: TextIO) -> str:
         print(tree)
@@ -40,7 +39,7 @@ class HuffmanCompressor:
     # @brief construit l'arbre de huffman à partir le fichier passé
     # @param file le fichier à compresser
     # @return l'arbre crée
-    # @throws CompressionException en cas d'erreur
+    # @throws compression_exception en cas d'erreur
     @staticmethod
     def get_tree_from_file(file: TextIO) -> [str, ]:
         tmp_tree: [str, int] = Counter([*file.read()])
@@ -82,7 +81,7 @@ class HuffmanCompressor:
 
             node_arr.append(new_node)
 
-        HuffmanCompressor.create_binary_for_tree(node_arr[0])
+        huffman_compressor.create_binary_for_tree(node_arr[0])
 
         return node_arr[0]
 
@@ -95,8 +94,8 @@ class HuffmanCompressor:
     def create_binary_for_tree(tree: [str, ], binary: str = "", left_code: str = "0"):
         if not ("binary" in tree):
             right_code = "1" if left_code == "0" else "0"
-            HuffmanCompressor.create_binary_for_tree(tree["val"]["left"], f"{binary}{left_code}")
-            HuffmanCompressor.create_binary_for_tree(tree["val"]["right"], f"{binary}{right_code}")
+            huffman_compressor.create_binary_for_tree(tree["val"]["left"], f"{binary}{left_code}")
+            huffman_compressor.create_binary_for_tree(tree["val"]["right"], f"{binary}{right_code}")
         else:
             tree["binary"] = binary
 
@@ -108,5 +107,5 @@ class HuffmanCompressor:
         print(json.dumps(tree, indent=2))
 
 
-# HuffmanCompressor.compress_file("C:/Users/devel/Desktop/fac/master/master-1-dev-web-mobile-fullstack/semestre-2/programmation-parrallele-et-distribue/projet/resources/test.txt")
-HuffmanCompressor.compress_file("C:/Users/devel/Desktop/fichiers-temporaires/a-faire-morpheus.txt")
+# huffman_compressor.compress_file("C:/Users/devel/Desktop/fac/master/master-1-dev-web-mobile-fullstack/semestre-2/programmation-parrallele-et-distribue/projet/resources/test.txt")
+huffman_compressor.compress_file("C:/Users/devel/Desktop/fichiers-temporaires/a-faire-morpheus.txt")

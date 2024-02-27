@@ -12,9 +12,13 @@ launch-client-local-server:
 
 # lance l'utilitaire d'api du client
 launch-client-api:
-	uvicorn communication.client:app --reload
+	cd communication && uvicorn client_api:app --port 6060 --reload
+
+# lance le serveur
+launch-server:
+	cd communication && python3 server.py || python server.py
 
 # lance les utilitaires du client
 launch-client:
-	make -j 2 launch-client-local-server launch-client-api
+	make -j 3 launch-server launch-client-local-server launch-client-api
 

@@ -1,4 +1,4 @@
-class CompressionException(Exception):
+class communication_exception(Exception):
 
     ##
     # @param error_message le message d'erreur

@@ -20,3 +20,7 @@ class communication_config:
     ##
     # @brief réception d'une partie du nouveau fichier
     receive_file_part = "--file_part--"
+
+    ##
+    # @brief echec de compression
+    compression_error = "--compression-error--"

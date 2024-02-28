@@ -1,12 +1,20 @@
-##
-# @brief class de gestion des clients du serveur
+import sys
+
+sys.path.append("..")
+sys.path.append("../compress_utils")
+
 import os
 import socket
 import threading
+from compress_utils.compression_exception import compression_exception
 from communication_exception import communication_exception
 from communication_config import communication_config
+from transmission_manager import transmission_manager
+from compress_utils.huffman_compressor import huffman_compressor
 
 
+##
+# @brief gestionnaire de thread client du serveur
 class server_client_manager(threading.Thread):
     ##
     # @brief action pour récupérer la liste des ressources
@@ -44,19 +52,21 @@ class server_client_manager(threading.Thread):
         try:
             while True:
                 # récupération de l'action à faire
-                action = self.conn.recv(3).decode()
+                action = transmission_manager.receive_message_from(self.conn)["message"]
 
-                match action:
-                    case server_client_manager.get_ressources_list:
-                        self.get_ressources_lists()
+                if action == server_client_manager.close_connection:
+                    self.disconnect_client()
+                    break
 
-                    case server_client_manager.get_files_to_download:
-                        self.receive_files_to_manage()
+                match = {
+                    server_client_manager.get_ressources_list: lambda: self.get_ressources_lists(),
+                    server_client_manager.get_files_to_download: lambda: self.receive_files_to_manage(),
+                }
 
-                    case server_client_manager.close_connection:
-                        print(f">> Déconnexion du client({self.my_number})")
-                        self.conn.close()
-        except Exception as _:
+                if action in match:
+                    match[action]()
+        except Exception as e:
+            print(e)
             raise communication_exception("Echec de réception du message client")
 
     ##
@@ -64,39 +74,44 @@ class server_client_manager(threading.Thread):
     def get_ressources_lists(self):
         for r, d, f in os.walk(server_client_manager.resources_path):
             for file in f:
-                complete_path = f"{r}/{file}".replace("\\", "/").encode()
+                transmission_manager.send_message(self.conn, f"{r}/{file}".replace("\\", "/"))
 
-                self.send_future_message_len(complete_path)
-                self.conn.send(complete_path)
-
-        end_message = communication_config.message_ending.encode()
-
-        self.send_future_message_len(end_message)
-        self.conn.send(end_message)
-
-    ##
-    # @brief envoi la taille du futur message
-    # @param future_send le message futur
-    def send_future_message_len(self, future_send: bytes):
-        self.conn.send(str(len(future_send)).encode())
+        transmission_manager.send_message(self.conn, communication_config.message_ending)
 
     ##
     # @brief récupère la liste des chemins de fichiers à envoyer, attend la réception de la taille puis le message
     def receive_files_to_manage(self):
+        print("reception des fichiers à télécharger")
         files_path = []
 
         while True:
             # réception de la taille du futur message puis récupération du message
-            data = self.conn.recv(int(self.conn.recv(4).decode())).decode()
+            data = transmission_manager.receive_message_from(self.conn)["message"]
 
             if data == self.end_filepath_sending:
                 break
 
             files_path.append(data)
 
-        print(files_path)
+        # compression des fichiers
+        for file_path in files_path:
+            # envoi du nom du fichier actuellement traité
+            transmission_manager.send_message(self.conn, communication_config.new_file)
+            transmission_manager.send_message(self.conn, file_path)
 
-        end_message = communication_config.message_ending.encode()
+            # compression du fichier
+            try:
+                transmission_manager.send_message(self.conn, communication_config.receive_file_part)
+                transmission_manager.send_message(self.conn, "bonjour de test")
+                huffman_compressor.compress_file(file_path)
+            except compression_exception as e:
+                transmission_manager.send_message(self.conn, communication_config.compression_error)
+                transmission_manager.send_message(self.conn, e.get_error_message())
 
-        self.send_future_message_len(end_message)
-        self.conn.send(end_message)
+        transmission_manager.send_message(self.conn, communication_config.message_ending)
+
+    ##
+    # @brief déconnecte le client
+    def disconnect_client(self):
+        print(f">> Déconnexion du client({self.my_number})")
+        self.conn.close()

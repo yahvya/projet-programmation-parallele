@@ -33,7 +33,7 @@ class huffman_compressor:
     @staticmethod
     def compress_tree(tree: [str, ], file: TextIO) -> str:
         print(tree)
-        pass
+        return ""
 
     ##
     # @brief construit l'arbre de huffman à partir le fichier passé
@@ -91,7 +91,7 @@ class huffman_compressor:
     # @param binary le binaire à associer
     # @param left_code code associé en descendant du côté gauche de l'arbre
     @staticmethod
-    def create_binary_for_tree(tree: [str, ], binary: str = "", left_code: str = "0"):
+    def create_binary_for_tree(tree: [str, ], binary: str = "", left_code: str = "0") -> None:
         if not ("binary" in tree):
             right_code = "1" if left_code == "0" else "0"
             huffman_compressor.create_binary_for_tree(tree["val"]["left"], f"{binary}{left_code}")
@@ -108,4 +108,4 @@ class huffman_compressor:
 
 
 # huffman_compressor.compress_file("C:/Users/devel/Desktop/fac/master/master-1-dev-web-mobile-fullstack/semestre-2/programmation-parrallele-et-distribue/projet/resources/test.txt")
-huffman_compressor.compress_file("C:/Users/devel/Desktop/fichiers-temporaires/a-faire-morpheus.txt")
+# huffman_compressor.compress_file("C:/Users/devel/Desktop/fichiers-temporaires/a-faire-morpheus.txt")

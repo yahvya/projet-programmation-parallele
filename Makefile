@@ -16,7 +16,7 @@ launch-client-api:
 
 # lance le serveur
 launch-server:
-	cd communication && python3 server.py || python server.py
+	cd communication && (python3 server.py || python server.py)
 
 # lance les utilitaires du client
 launch-client:

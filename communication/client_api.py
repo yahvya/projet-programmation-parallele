@@ -1,11 +1,10 @@
 import socket
-from typing import List
-
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from communication_exception import communication_exception
 from communication_config import communication_config
 from server_client_manager import server_client_manager
+from transmission_manager import transmission_manager
 
 app = FastAPI()
 
@@ -41,19 +40,19 @@ def get_files():
 
         file_list = []
 
-        client.send(server_client_manager.get_ressources_list.encode())
+        transmission_manager.send_message(client, server_client_manager.get_ressources_list)
 
         # récupération de la liste des chemins de fichiers
         while True:
-            filepath = client.recv(int(client.recv(4).decode())).decode()
+            data = transmission_manager.receive_message_from(client)["message"]
 
-            if filepath == communication_config.message_ending:
+            if data == communication_config.message_ending:
                 break
 
-            file_list.append({"path": filepath})
+            file_list.append({"path": data})
 
         # fermeture de la connexion
-        client.send(server_client_manager.close_connection.encode())
+        transmission_manager.send_message(client, server_client_manager.close_connection)
 
         return {
             "success": True,
@@ -74,49 +73,44 @@ async def get_files_to_download(request: Request):
 
         files_path_list = form.getlist("files[]")
 
-        files = []
-        messages = []
+        # files = []
+        # messages = []
 
         client = get_client_conn()
 
         # envoi du type de l'action
-        client.send(server_client_manager.get_files_to_download.encode())
+        transmission_manager.send_message(client, server_client_manager.get_files_to_download)
 
         # transmission des chemins de fichier à récupérer
         for path in files_path_list:
-            path_message = path.encode()
-            message_len = str(len(path_message)).encode()
-
-            # transmission de la taille du futur message (chemin) à venir puis transmission du chemin
-            client.send(message_len)
-            client.send(path_message)
+            transmission_manager.send_message(client, path)
 
         # envoi de l'action marquant la fin de réception des fichiers
-        end_sending_message = server_client_manager.end_filepath_sending.encode()
+        transmission_manager.send_message(client, server_client_manager.end_filepath_sending)
 
-        client.send(str(len(end_sending_message)).encode())
-        client.send(end_sending_message)
+        match = {
+            communication_config.new_file: lambda client_con: print("nouveau fichier : " + transmission_manager.receive_message_from(client_con)["message"]),
+            # à faire
+            # récupération du nom du fichier à venir
+            # switch pour que toutes les nouvelles entrées soient dans le nouveau fichier
+            communication_config.receive_file_part: lambda client_con: print("\t>> partie du fichier : " + transmission_manager.receive_message_from(client_con)["message"]),
+            # à faire
+            # écrire dans le fichier ouvert les données,
+            communication_config.compression_error: lambda client_con: print("\t>> Erreur de connexion : " + transmission_manager.receive_message_from(client_con)["message"])
+        }
 
-        # récupération des fichiers demandés compresses
+        # récupération des fichiers demandés compressés
         while True:
-            data = client.recv(int(client.recv(4).decode())).decode()
+            data = transmission_manager.receive_message_from(client)["message"]
 
-            match data:
-                case communication_config.message_ending:
-                    break
-                case communication_config.new_file:
-                    # à faire
-                    # récupération du nom du fichier à venir
-                    # switch pour que toutes les nouvelles entrées soient dans le nouveau fichier
-                    pass
+            if data == communication_config.message_ending:
+                break
 
-                case communication_config.receive_file_part:
-                    # à faire
-                    # écrire dans le fichier ouvert les données
-                    pass
+            if data in match:
+                match[data](client)
 
         # fin de l'échange
-        client.send(server_client_manager.close_connection.encode())
+        transmission_manager.send_message(client, server_client_manager.close_connection)
 
         return {
             "success": True,

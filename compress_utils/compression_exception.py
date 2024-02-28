@@ -11,5 +11,5 @@ class compression_exception(Exception):
     ##
     # @param default_message message d'erreur par défaut
     # @return le message d'erreur s'il peut être affiché ou un message par défaut
-    def get_error_message(self, default_message: str = "Une erreur s'est produite"):
+    def get_error_message(self, default_message: str = "Une erreur s'est produite") -> str:
         return str(self) if self.is_displayable else default_message

@@ -23,7 +23,7 @@ loadFilesList()
             input.id = `files${index}`;
             input.type = "checkbox";
             input.name = "files[]";
-            input.value = fileDatas.name;
+            input.value = fileDatas.path;
 
             fileContainer.setAttribute("for",`files${index}`);
             fileContainer.classList.add("file");
@@ -49,8 +49,13 @@ fileSelectionForm.addEventListener("submit",(submitEvent) => {
 
     fetch("http://127.0.0.1:6060/download-files",options)
         .then(response => response.json() )
-        .then(files => {
+        .then(data => {
             console.log(files)
+
+            if(data.success)
+                console.log("reussi")
+            else
+                alert(files.error)
         })
         .catch(error => alert("Une erreur s'est produite, veuillez retenter") );
 });

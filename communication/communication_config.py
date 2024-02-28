@@ -10,5 +10,13 @@ class communication_config:
     port = 5555
 
     ##
-    # symbole de fin d'envoi de message
+    # @brief symbole de fin d'envoi de message
     message_ending = "--end--"
+
+    ##
+    # @brief nouveau fichier
+    new_file = "--new-file--"
+
+    ##
+    # @brief réception d'une partie du nouveau fichier
+    receive_file_part = "--file_part--"

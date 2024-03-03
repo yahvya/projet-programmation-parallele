@@ -1,59 +1,42 @@
+import sys
+sys.path.append("..")
+sys.path.append("../communication")
+
+from termcolor import colored
 import socket
-from communication_exception import communication_exception
-from communication_config import communication_config
-from server_client_manager import server_client_manager
+
+from communication.client import client
 
 
 ##
-# @brief class de gestion du serveur du projet
+# @brief gestion de serveur
 class server:
-    server = None
+    ##
+    # @brief adresse de connexion
+    address = "localhost"
 
     ##
-    # @brief configure le lancement du serveur
-    # @throws communication_exception en cas d'erreur
-    @staticmethod
-    def launch_server():
-        try:
-            # création du serveur
-            server.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-            # configuration du serveur
-            server.server.bind((communication_config.address, communication_config.port))
-        except Exception as _:
-            raise communication_exception("Echec de lancement du serveur")
+    # @brief port de connexion
+    port = 5555
 
     ##
-    # @brief configure l'acception des clients
-    # @throws communication_exception en cas d'erreur
+    # @brief lance le serveur
     @staticmethod
-    def accept_clients():
-        if server.server is None:
-            raise communication_exception("La connexion serveur n'a pas été initialisé")
+    def launch():
+        client_count = 0
+        con = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        con.bind((server.address, server.port))
+        con.listen()
 
-        # écoute et démarrage d'acception des clients
-        server.server.listen()
+        print(colored("--- Lancement du serveur (attente des clients) ---\n", "green"))
 
-        try:
-            count_of_client = 0
+        while True:
+            client_con, _ = con.accept()
+            client_count += 1
 
-            while True:
-                print(f">> Attente du client {count_of_client}")
-
-                conn, _ = server.server.accept()
-
-                # lancement du thread client
-                server_client_manager(conn, count_of_client).start()
-
-                print(f"\tClient({count_of_client}) lancé")
-                count_of_client += 1
-
-        except Exception as _:
-            raise communication_exception("Une erreur s'est produite lors de l'acceptation de clients")
+            client(client_con, client_count + 1).start()
+            print(colored(f"\t>> Lancement du client ({client_count})", "blue"))
 
 
-try:
-    server.launch_server()
-    server.accept_clients()
-except communication_exception as e:
-    print(e.get_error_message())
+if __name__ == "__main__":
+    server.launch()

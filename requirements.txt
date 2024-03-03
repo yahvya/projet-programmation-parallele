@@ -1,1 +1,4 @@
-fastapi~=0.109.2
+termcolor~=2.4.0
+uvicorn
+fastapi
+python-multipart

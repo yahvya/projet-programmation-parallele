@@ -1,58 +1,63 @@
-# Projet programmation parallèle
- 
-- Bathily Yahaya
-- Kilimou Ambroise
+# Projet de programmation parallèle (M1)
 
-## Pour lancer le projet 
+> Projet visant à simuler la transmission de fichiers par réseau en utilisant l'algorithme de compression huffman
 
-> Si vous ne possédez pas l'utilitaire make veuillez copier puis coller dans l'ordre les commandes associés
+## Groupe
 
-### Pour les utilisateurs de windows
+- BATHILY YAHAYA
+- KILIMOU AMBROISE
+
+## Structure du projet
+
+- **communication** :
+  - client.py (*class de gestion d'un client du serveur*)
+  - server.py (*class de gestion du serveur fournisseur de fichiers*)
+  - transmission_manager.py (*class de gestion de transmission de messages réseau*)
+- **huffman_compression** :
+  - huffman_compressor.py (*class de gestion de compression d'un fichier*)
+  - huffman_decompressor.py (*class de gestion de décompression d'un fichier*)
+- **interface** :
+  - api.py (*class de gestion de l'api de liaison interface serveur*)
+  - visual (*dossier contenant les élements de l'IHM*)
+- **ressources** : (*dossier contenant les fichiers proposés au téléchargement par le serveur*)
+- **app.py** : (*fichier de lancement des différents programmes de l'application*)
+- **Makefile** : (*fichier contenant les commandes utiles pour le lancement du projet*)
+
+## Fonctionnement du projet
+
+> L'IHM communique avec l'api. L'api représente donc un client du serveur avec lequel il communique via l'utilitaire de transmission via des messages au format (taille|message). Le serveur à la réception d'une connexion crée un gestionnaire client qui se charge de fournir les résultats des actions reçues.
+
+> Au niveau de la compression l'arbre est représentée par un format json left right puis une fois les binaires associés, transformé en json {caractère : binaire}
+
+> Pour le traitement global, à chaque étape de la compression une fonction callback associé à l'étape est appellé permettant de fonctionner par stream (ex: une fois l'arbre crée l'arbre est envoyé dans sa version compressée) 
+
+## Lancement du projet
+
+> Comme spécifié l'utilitaire make est utilisé afin de faciliter les actions, toutefois si vous ne le possédez pas, copiez coller les commandes associées directement dans le terminal suffira.
+
+- Initialisez l'application en exécutant
 
 ```
-make init-env
-./venv/Scripts/activate
-make install-requirements
-```
-### Pour les utilisateurs unix
-
-```
-make init-env
-source ./venv/bin/activate
-make install-requirements
+make init-app
 ```
 
-> Maintenant, vous pouvez lancer le projet en lançant la commande suivante puis en ouvrant le fichier puis en saisissant le lien suivant dans votre navigateur 
+- Lancez ensuite l'environnement python 
+  - Sur windows
+    ```
+    venv/Scripts/activate
+    ```
+  - Sur unix
+    ```
+    source venv/bin/activate || ./venv/bin/activate
+    ```
 
-*Lien*
+- Installez les librairies utilisées puis lancez l'application
+
 ```
-http://localhost:8080/client-interface.html
-```
-*Commande*
-
-```
-make launch-client
+make install-requirements launch-app
 ```
 
-## Logique de fonctionnement du projet
-
-### L'interface graphique (*communication/interface*)
-
-> Nous avons une interface graphique qui grâce à javascript fait des requêtes vers une api afin de traiter les actions qui se passent sur la page
-
-### L'api (*communication/client_api.py*)
-
-> Nous avons créé une api avec fastapi, cette api sert de client au serveur et fait donc l'intermédiaire entre les requêtes de l'interface et celui ci 
-
-### Le serveur (*communication/server.py*)
-
-> Le serveur quand à lui joue son rôle de serveur et attend de nouvelles connexions afin de créer des instances de (*communication/server_client_manager.py*) lancés dans des threads, c'est donc ce fichier qui s'occupe de la gestion des messages entrant et de la fourniture des réponses.
-
-
-### Logique des échanges sockets
-
-> Au niveau du traitement des messages reçu (*communication.server_client_manager.py*), des actions sont définis pour savoir quelle action est attendue (récupération de la liste des ficbiers disponibles, réception des fichiers que l'utilisateur souhaite télécharger ...). A la réception donc d'une action la fonction de gestion correspondante à l'action est appellée afin de gérer ce qu'il y a à faire (réception d'autres messages ....)
-
-> Pour transmettre un message, on ajoute avant sa taille suivi d'un symbole marquant la fin de la taille du réel message attendu, ainsi la taille exacte attendue est récupéré. Par exemple si je veux envoyer bonjour, je l'encode puis envoi sa taille en premier ainsi derrière sur mon prochain recv, je saurai quelle taille récupérer.
-
-> Pour mettre fin à une connexion et donc libérer le thread associé le client connecté peut envoyer une action défini pour celle-ci afin que le thread arrête de tourner. 
+- Rendez-vous ensuite dans votre navigateur sur le lien suivant
+```
+http://localhost:8080/app.html
+```

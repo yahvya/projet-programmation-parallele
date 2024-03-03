@@ -1,51 +1,49 @@
-from communication_exception import communication_exception
-
-##
-# @brief gestionnaire de transmission de messages
 import socket
 
 
+##
+# @brief gestionnaire de transmission
 class transmission_manager:
     ##
-    # @brief séparateur de la taille du message suivant avec le réel message
-    size_separator = "|"
+    # @brief séparateur de message
+    message_separator: str = "|"
 
     ##
-    # @brief envoi un message
-    # @throws communication_exception en cas d'erreur
+    # @return le message récupéré directement au format d'octets
     @staticmethod
-    def send_message(conn: socket.SocketType,message: str) -> None:
-        try:
-            # formattage du message
-            formatted_message = f"{len(message.encode())}{transmission_manager.size_separator}{message}"
+    def receive_byte_message(con: socket.SocketType) -> bytes:
+        # récupération de la taille
+        size = ""
 
-            conn.send(formatted_message.encode())
-        except Exception as _:
-            raise communication_exception("Une erreur s'est produite lors de la transmission du message")
+        while True:
+            char = con.recv(1).decode()
+
+            if char == transmission_manager.message_separator:
+                break
+
+            size += char
+
+        return con.recv(int(size))
 
     ##
-    # @brief récupère un message
-    # @return le contenu du message
-    # @throws communication_exception en cas d'erreur
+    # @return le message récupéré directement au format de chaine
     @staticmethod
-    def receive_message_from(conn: socket.SocketType) -> [str,]:
-        try:
-            result = {"size": "", "message": None}
+    def receive_string_message(con: socket.SocketType) -> str:
+        return transmission_manager.receive_byte_message(con).decode()
 
-            while True:
-                # récupération des différentes parties de la taille
-                data = conn.recv(1).decode()
+    ##
+    # @brief envoi un message d'octets
+    # @param con la connexion
+    # @param data la donnée à transmettre
+    @staticmethod
+    def send_byte_message(con: socket.SocketType, data: bytes) -> None:
+        con.send(f"{str(len(data))}{transmission_manager.message_separator}".encode())
+        con.send(data)
 
-                if data == transmission_manager.size_separator:
-                    # récupération du message
-                    result["size"] = int(result["size"])
-                    result["message"] = conn.recv(result["size"]).decode()
-
-                    break
-                else:
-                    result["size"] += data
-
-            return result
-        except Exception as _:
-            raise communication_exception("Une erreur s'est produite lros de la récupération du message")
-
+    ##
+    # @brief envoi un message de chaine de caractères
+    # @param con la connexion
+    # @param data la donnée à transmettre
+    @staticmethod
+    def send_string_message(con: socket.SocketType, data: str) -> None:
+        transmission_manager.send_byte_message(con, data.encode())

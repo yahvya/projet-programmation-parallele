@@ -1,4 +1,0 @@
-gérer logout dans login
-voir les différents controller admin
-remplir not logged cond*
-revoir les liens dans footer.twig

@@ -20,7 +20,6 @@
   - api.py (*class de gestion de l'api de liaison interface serveur*)
   - visual (*dossier contenant les élements de l'IHM*)
 - **ressources** : (*dossier contenant les fichiers proposés au téléchargement par le serveur*)
-- **app.py** : (*fichier de lancement des différents programmes de l'application*)
 - **Makefile** : (*fichier contenant les commandes utiles pour le lancement du projet*)
 
 ## Fonctionnement du projet

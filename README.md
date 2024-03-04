@@ -28,7 +28,17 @@
 
 > Au niveau de la compression l'arbre est représentée par un format json left right puis une fois les binaires associés, transformé en json {caractère : binaire}
 
-> Pour le traitement global, à chaque étape de la compression une fonction callback associé à l'étape est appellé permettant de fonctionner par stream (ex: une fois l'arbre crée l'arbre est envoyé dans sa version compressée) 
+> Pour le traitement global, à chaque étape de la compression une fonction callback associé à l'étape est appellé permettant de fonctionner par stream (ex : une fois l'arbre crée l'arbre est envoyé dans sa version compressée)
+
+> Pour vérifier que la compression se fait bien, veuillez ajouter le code suivant dans *huffman_compression/huffman_compressor.py*, en lançant ce même fichier, vous aurez dans le dossier *ressources* un fichier resultat_compression.txt dont vous pourrez comparer la taille avec *ressources/fichier-1.txt* qui est le fichier compressé
+
+```
+with open("../ressources/resultat-compression.txt", "wb+") as f:
+    f.write(huffman_compressor.create_compression_stream(
+        filepath="../ressources/fichier-1.txt",
+        to_do_on_compression_error=lambda error: print(error.get_error_message())
+    ).read())
+```
 
 ## Lancement du projet
 
